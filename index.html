@@ -1,6 +1,26 @@
 <!doctype html>
 <html lang="es">
+
 <head>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+async function loadGlobalRanking(){
+  const {data,error}=await supabaseClient
+    .from("flags")
+    .select("id,name,emoji,elo,wins,games,losses")
+    .order("elo",{ascending:false})
+    .limit(20);
+  if(error) throw error;
+  return data||[];
+}
+</script>
+<script>
+const SUPABASE_URL = "https://wcvktwqbvzgccqlvbuln.supabase.co";
+const SUPABASE_KEY = "sb_publishable_wTAo2EQDt1FyUfZDdiVRxQ_Zh35zbbL";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let remoteFlags = [];
+let sessionId = crypto.randomUUID();
+</script>
+
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#061727">
@@ -104,6 +124,7 @@ header{height:74px;display:flex;align-items:center;justify-content:space-between
 "use strict";
 const FLAGS=[["Afganistán","🇦🇫"],["Albania","🇦🇱"],["Argelia","🇩🇿"],["Andorra","🇦🇩"],["Angola","🇦🇴"],["Antigua y Barbuda","🇦🇬"],["Argentina","🇦🇷"],["Armenia","🇦🇲"],["Australia","🇦🇺"],["Austria","🇦🇹"],["Azerbaiyán","🇦🇿"],["Bahamas","🇧🇸"],["Baréin","🇧🇭"],["Bangladés","🇧🇩"],["Barbados","🇧🇧"],["Bielorrusia","🇧🇾"],["Bélgica","🇧🇪"],["Belice","🇧🇿"],["Benín","🇧🇯"],["Bután","🇧🇹"],["Bolivia","🇧🇴"],["Bosnia y Herzegovina","🇧🇦"],["Botsuana","🇧🇼"],["Brasil","🇧🇷"],["Brunéi","🇧🇳"],["Bulgaria","🇧🇬"],["Burkina Faso","🇧🇫"],["Burundi","🇧🇮"],["Cabo Verde","🇨🇻"],["Camboya","🇰🇭"],["Camerún","🇨🇲"],["Canadá","🇨🇦"],["República Centroafricana","🇨🇫"],["Chad","🇹🇩"],["Chile","🇨🇱"],["China","🇨🇳"],["Colombia","🇨🇴"],["Comoras","🇰🇲"],["Congo","🇨🇬"],["República Democrática del Congo","🇨🇩"],["Costa Rica","🇨🇷"],["Côte d’Ivoire","🇨🇮"],["Croacia","🇭🇷"],["Cuba","🇨🇺"],["Chipre","🇨🇾"],["Chequia","🇨🇿"],["Dinamarca","🇩🇰"],["Yibuti","🇩🇯"],["Dominica","🇩🇲"],["República Dominicana","🇩🇴"],["Ecuador","🇪🇨"],["Egipto","🇪🇬"],["El Salvador","🇸🇻"],["Guinea Ecuatorial","🇬🇶"],["Eritrea","🇪🇷"],["Estonia","🇪🇪"],["Esuatini","🇸🇿"],["Etiopía","🇪🇹"],["Fiyi","🇫🇯"],["Finlandia","🇫🇮"],["Francia","🇫🇷"],["Gabón","🇬🇦"],["Gambia","🇬🇲"],["Georgia","🇬🇪"],["Alemania","🇩🇪"],["Ghana","🇬🇭"],["Grecia","🇬🇷"],["Granada","🇬🇩"],["Guatemala","🇬🇹"],["Guinea","🇬🇳"],["Guinea-Bisáu","🇬🇼"],["Guyana","🇬🇾"],["Haití","🇭🇹"],["Honduras","🇭🇳"],["Hungría","🇭🇺"],["Islandia","🇮🇸"],["India","🇮🇳"],["Indonesia","🇮🇩"],["Irán","🇮🇷"],["Irak","🇮🇶"],["Irlanda","🇮🇪"],["Israel","🇮🇱"],["Italia","🇮🇹"],["Jamaica","🇯🇲"],["Japón","🇯🇵"],["Jordania","🇯🇴"],["Kazajistán","🇰🇿"],["Kenia","🇰🇪"],["Kiribati","🇰🇮"],["Corea del Norte","🇰🇵"],["Corea del Sur","🇰🇷"],["Kuwait","🇰🇼"],["Kirguistán","🇰🇬"],["Laos","🇱🇦"],["Letonia","🇱🇻"],["Líbano","🇱🇧"],["Lesoto","🇱🇸"],["Liberia","🇱🇷"],["Libia","🇱🇾"],["Liechtenstein","🇱🇮"],["Lituania","🇱🇹"],["Luxemburgo","🇱🇺"],["Madagascar","🇲🇬"],["Malaui","🇲🇼"],["Malasia","🇲🇾"],["Maldivas","🇲🇻"],["Mali","🇲🇱"],["Malta","🇲🇹"],["Islas Marshall","🇲🇭"],["Mauritania","🇲🇷"],["Mauricio","🇲🇺"],["México","🇲🇽"],["Micronesia","🇫🇲"],["Moldavia","🇲🇩"],["Mónaco","🇲🇨"],["Mongolia","🇲🇳"],["Montenegro","🇲🇪"],["Marruecos","🇲🇦"],["Mozambique","🇲🇿"],["Myanmar (Birmania)","🇲🇲"],["Namibia","🇳🇦"],["Nauru","🇳🇷"],["Nepal","🇳🇵"],["Países Bajos","🇳🇱"],["Nueva Zelanda","🇳🇿"],["Nicaragua","🇳🇮"],["Níger","🇳🇪"],["Nigeria","🇳🇬"],["Macedonia del Norte","🇲🇰"],["Noruega","🇳🇴"],["Omán","🇴🇲"],["Pakistán","🇵🇰"],["Palaos","🇵🇼"],["Panamá","🇵🇦"],["Papúa Nueva Guinea","🇵🇬"],["Paraguay","🇵🇾"],["Perú","🇵🇪"],["Filipinas","🇵🇭"],["Polonia","🇵🇱"],["Portugal","🇵🇹"],["Catar","🇶🇦"],["Rumanía","🇷🇴"],["Rusia","🇷🇺"],["Ruanda","🇷🇼"],["San Cristóbal y Nieves","🇰🇳"],["Santa Lucía","🇱🇨"],["San Vicente y las Granadinas","🇻🇨"],["Samoa","🇼🇸"],["San Marino","🇸🇲"],["Santo Tomé y Príncipe","🇸🇹"],["Arabia Saudí","🇸🇦"],["Senegal","🇸🇳"],["Serbia","🇷🇸"],["Seychelles","🇸🇨"],["Sierra Leona","🇸🇱"],["Singapur","🇸🇬"],["Eslovaquia","🇸🇰"],["Eslovenia","🇸🇮"],["Islas Salomón","🇸🇧"],["Somalia","🇸🇴"],["Sudáfrica","🇿🇦"],["Sudán del Sur","🇸🇸"],["España","🇪🇸"],["Sri Lanka","🇱🇰"],["Sudán","🇸🇩"],["Surinam","🇸🇷"],["Suecia","🇸🇪"],["Suiza","🇨🇭"],["Siria","🇸🇾"],["Tayikistán","🇹🇯"],["Tanzania","🇹🇿"],["Tailandia","🇹🇭"],["Timor-Leste","🇹🇱"],["Togo","🇹🇬"],["Tonga","🇹🇴"],["Trinidad y Tobago","🇹🇹"],["Túnez","🇹🇳"],["Turquía","🇹🇷"],["Turkmenistán","🇹🇲"],["Tuvalu","🇹🇻"],["Uganda","🇺🇬"],["Ucrania","🇺🇦"],["Emiratos Árabes Unidos","🇦🇪"],["Reino Unido","🇬🇧"],["Estados Unidos","🇺🇸"],["Uruguay","🇺🇾"],["Uzbekistán","🇺🇿"],["Vanuatu","🇻🇺"],["Venezuela","🇻🇪"],["Vietnam","🇻🇳"],["Yemen","🇾🇪"],["Zambia","🇿🇲"],["Zimbabue","🇿🇼"],["Palestina","🇵🇸"],["Vaticano","🇻🇦"]]
 const KEY="flagBattle_ui_v2";
+
 let store={games:0,ranking:{},history:[]}, bracket=[],round=1,group=0,roundWinners=[],sort="elo",selected=null;
 function safeRead(){try{const x=localStorage.getItem(KEY);return x?JSON.parse(x):null}catch(e){return null}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){}}
@@ -114,9 +135,21 @@ function $(id){return document.getElementById(id)}
 function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
 function screen(id){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");window.scrollTo(0,0)}
 function nav(active){document.querySelectorAll(".nav").forEach(x=>x.classList.remove("active"));active.classList.add("active")}
-function start(){
- bracket=shuffle(FLAGS).slice(0,64);round=1;group=0;roundWinners=[];selected=null;
- $("flagsSeen").textContent="64";screen("game");nav($("navPlay"));render();
+async function start(){
+  try{
+    const {data,error}=await supabaseClient
+      .from("flags")
+      .select("id,name,emoji,elo,wins,games,losses")
+      .order("id");
+    if(error) throw error;
+    if(!data || data.length !== 195) throw new Error("Supabase no contiene exactamente 195 banderas");
+    remoteFlags=data.map(f=>({id:f.id,name:f.name,emoji:f.emoji,elo:f.elo,wins:f.wins,games:f.games,losses:f.losses}));
+  }catch(e){
+    console.warn("Supabase no disponible; usando catálogo local.",e);
+    remoteFlags=FLAGS.map((f,i)=>({id:i+1,name:f[0],emoji:f[1],elo:1000,wins:0,games:0,losses:0}));
+  }
+  bracket=shuffle(remoteFlags).slice(0,64);round=1;group=0;roundWinners=[];selected=null;
+  $("flagsSeen").textContent="64";screen("game");nav($("navPlay"));render();
 }
 function render(){
  const groups=round===1?16:round===2?4:1;
@@ -130,8 +163,24 @@ function render(){
    b.addEventListener("click",()=>choose(f,b,four));grid.appendChild(b);
  });
 }
-function choose(f,btn,four){
- if(selected)return;selected=f;btn.classList.add("selected");
+async function choose(f,btn,four){
+ if(selected)return;selected=f;
+  // Registrar elección en el ranking global.
+  try{
+    const winner=bracket[group*4 + Number(selected)];
+    const opponents=[0,1,2,3]
+      .filter(i=>i!==Number(selected))
+      .map(i=>bracket[group*4+i].id);
+    if(winner && winner.id){
+      const {error}=await supabaseClient.rpc("record_choice",{
+        p_session_id:sessionId,
+        p_winner_flag_id:winner.id,
+        p_opponent_flag_ids:opponents
+      });
+      if(error) console.warn("No se pudo registrar la elección:",error);
+    }
+  }catch(e){ console.warn("Error registrando elección remota:",e); }
+btn.classList.add("selected");
  document.querySelectorAll(".flag-card").forEach(x=>{if(x!==btn)x.classList.add("dim")});
  updateElo(f,four);
  setTimeout(()=>{
