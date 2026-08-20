@@ -64,39 +64,31 @@ header{height:74px;display:flex;align-items:center;justify-content:space-between
 
 <script>
 const I18N = {
-  es: {
-    choose: "Elige tu favorita",
-    round: "Ronda",
-    ranking: "Ranking",
-    games: "Partidas",
-    wins: "Victorias",
-    elo: "ELO",
-    winner: "Ganadora",
-    playAgain: "Jugar de nuevo",
-    share: "Compartir resultado",
-    back: "Volver",
-    worldRanking: "Ranking mundial",
-    noData: "Todavía no hay datos.",
-    loading: "Cargando…",
-    selected: "Seleccionada",
-    language: "Idioma"
+  es:{
+    choose:"¿Cuál es la bandera más bonita?", tapFavorite:"Toca tu favorita",
+    chooseMost:"Elige la que más te guste.", noCorrect:"¡No hay respuestas correctas!",
+    round:"Ronda", groups:"grupos", group:"grupo", play:"Jugar", ranking:"Ranking",
+    stats:"Estadísticas", worldRanking:"RANKING MUNDIAL",
+    globalRankingDesc:"Ranking compartido entre todos los jugadores.",
+    gameStats:"Estadísticas de la partida", roundsPlayed:"Rondas jugadas",
+    groupsCleared:"Grupos superados", flagsSeenLabel:"Banderas vistas", selections:"Selecciones",
+    playAgain:"Jugar otra partida", share:"Compartir resultado", backToGame:"Volver a jugar",
+    flag:"Bandera", wins:"Victorias", winRate:"% Victorias", elo:"ELO",
+    winner:"¡Tenemos ganadora!", loading:"Cargando…", noData:"Todavía no hay datos.",
+    back:"Volver", losses:"Derrotas", games:"Partidas", language:"Idioma"
   },
-  en: {
-    choose: "Choose your favorite",
-    round: "Round",
-    ranking: "Ranking",
-    games: "Games",
-    wins: "Wins",
-    elo: "ELO",
-    winner: "Winner",
-    playAgain: "Play again",
-    share: "Share result",
-    back: "Back",
-    worldRanking: "World ranking",
-    noData: "No data yet.",
-    loading: "Loading…",
-    selected: "Selected",
-    language: "Language"
+  en:{
+    choose:"Which flag is the most beautiful?", tapFavorite:"Tap your favorite",
+    chooseMost:"Choose the one you like most.", noCorrect:"There are no right answers!",
+    round:"Round", groups:"groups", group:"group", play:"Play", ranking:"Ranking",
+    stats:"Statistics", worldRanking:"WORLD RANKING",
+    globalRankingDesc:"Ranking shared by all players.",
+    gameStats:"Game statistics", roundsPlayed:"Rounds played",
+    groupsCleared:"Groups cleared", flagsSeenLabel:"Flags seen", selections:"Selections",
+    playAgain:"Play again", share:"Share result", backToGame:"Back to game",
+    flag:"Flag", wins:"Wins", winRate:"Win rate", elo:"ELO",
+    winner:"We have a winner!", loading:"Loading…", noData:"No data yet.",
+    back:"Back", losses:"Losses", games:"Games", language:"Language"
   }
 };
 
@@ -155,25 +147,23 @@ const COUNTRY_EN = {
 let currentLang = localStorage.getItem("flagBattleLang") || "es";
 
 function t(key){ return (I18N[currentLang] && I18N[currentLang][key]) || key; }
+function updateLanguageUI(){
+  document.documentElement.lang=currentLang;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{ el.textContent=t(el.dataset.i18n); });
+  document.querySelectorAll(".lang-btn").forEach(btn=>btn.classList.toggle("active",btn.dataset.lang===currentLang));
+  if(typeof render==="function" && bracket.length) render();
+  if(typeof renderRanking==="function" && document.getElementById("ranking").classList.contains("active")) renderRanking();
+}
+
 function countryName(name){ return currentLang === "en" ? (COUNTRY_EN[name] || name) : name; }
 
 function setLanguage(lang){
-  currentLang = lang === "en" ? "en" : "es";
-  localStorage.setItem("flagBattleLang", currentLang);
-  document.documentElement.lang = currentLang;
-  document.querySelectorAll("[data-i18n]").forEach(el => {
-    const key = el.dataset.i18n;
-    el.textContent = t(key);
-  });
-  document.querySelectorAll("[data-country-name]").forEach(el => {
-    el.textContent = countryName(el.dataset.countryName);
-  });
-  document.querySelectorAll(".lang-btn").forEach(btn => btn.classList.toggle("active", btn.dataset.lang === currentLang));
-  if(typeof render === "function") render();
-  if(typeof renderRanking === "function") renderRanking();
+  currentLang=lang==="en"?"en":"es";
+  localStorage.setItem("flagBattleLang",currentLang);
+  updateLanguageUI();
 }
 
-document.addEventListener("DOMContentLoaded", () => setLanguage(currentLang));
+document.addEventListener("DOMContentLoaded", () => updateLanguageUI());
 </script>
 
 
@@ -203,10 +193,10 @@ document.addEventListener("DOMContentLoaded", () => setLanguage(currentLang));
 <section id="game" class="screen active">
   <div class="progress-row"><span id="roundText">Ronda 1 de 3</span><span id="remainingText">16 grupos</span></div>
   <div class="progress"><div id="progressBar"></div></div>
-  <div class="question"><h2>¿Cuál es la bandera más bonita?</h2><p>Toca tu favorita</p></div>
+  <div class="question"><h2 id="questionTitle" data-i18n="choose">Elige tu favorita</h2><p id="questionSub" data-i18n="tapFavorite">Toca tu favorita</p></div>
   <div id="path" class="path" hidden></div>
   <div id="grid" class="flag-grid"></div>
-  <div class="hint">💡 <div><b>Elige la que más te guste.</b><br>¡No hay respuestas correctas!</div></div>
+  <div class="hint">💡 <div><b id="hint1" data-i18n="chooseMost">Elige la que más te guste.</b><br><span id="hint2" data-i18n="noCorrect">¡No hay respuestas correctas!</span></div></div>
 </section>
 
 <section id="result" class="screen">
@@ -215,23 +205,23 @@ document.addEventListener("DOMContentLoaded", () => setLanguage(currentLang));
     <div class="winner-flag" id="winnerFlag">🇯🇵</div>
     <div class="winner-name" id="winnerName">JAPÓN</div>
     <div class="panel">
-      <div class="panel-title">Estadísticas de la partida</div>
-      <div class="stat-row"><span>Rondas jugadas</span><b>3</b></div>
-      <div class="stat-row"><span>Grupos superados</span><b>21</b></div>
-      <div class="stat-row"><span>Banderas vistas</span><b id="flagsSeen">64</b></div>
-      <div class="stat-row"><span>Selecciones</span><b>21</b></div>
+      <div class="panel-title" data-i18n="gameStats">Estadísticas de la partida</div>
+      <div class="stat-row"><span data-i18n="roundsPlayed">Rondas jugadas</span><b>3</b></div>
+      <div class="stat-row"><span data-i18n="groupsCleared">Grupos superados</span><b>21</b></div>
+      <div class="stat-row"><span data-i18n="flagsSeenLabel">Banderas vistas</span><b id="flagsSeen">64</b></div>
+      <div class="stat-row"><span data-i18n="selections">Selecciones</span><b>21</b></div>
     </div>
-    <button class="primary" id="newGame">▶ &nbsp; Jugar otra partida</button>
-    <button class="secondary" id="share">↗ &nbsp; Compartir resultado</button>
+    <button class="primary" id="newGame">▶ &nbsp; <span data-i18n="playAgain">Jugar otra partida</span></button>
+    <button class="secondary" id="share">↗ &nbsp; <span data-i18n="share">Compartir resultado</span></button>
   </div>
 </section>
 
 <section id="ranking" class="screen">
-  <div class="ranking-head"><h2>♛ RANKING GENERAL</h2><p>El ranking se guarda en este dispositivo.</p></div>
-  <div class="tabs"><button class="tab active" data-sort="elo">ELO</button><button class="tab" data-sort="wins">Victorias</button><button class="tab" data-sort="rate">% Victorias</button></div>
-  <div class="table"><div class="row head"><div>#</div><div>Bandera</div><div>ELO</div><div>Victorias</div><div>%</div></div><div id="rankingBody"></div></div>
-  <button class="secondary" id="back">← Volver a jugar</button>
-  <button class="secondary" id="reset">Borrar ranking</button>
+  <div class="ranking-head"><h2>♛ <span data-i18n="worldRanking">RANKING MUNDIAL</span></h2><p data-i18n="globalRankingDesc">Ranking compartido entre todos los jugadores.</p></div>
+  <div class="tabs"><button class="tab active" data-sort="elo" data-i18n="elo">ELO</button><button class="tab" data-sort="wins" data-i18n="wins">Victorias</button><button class="tab" data-sort="rate" data-i18n="winRate">% Victorias</button></div>
+  <div class="table"><div class="row head"><div>#</div><div data-i18n="flag">Bandera</div><div>ELO</div><div data-i18n="wins">Victorias</div><div>%</div></div><div id="rankingBody"></div></div>
+  <button class="secondary" id="back">← <span data-i18n="backToGame">Volver a jugar</span></button>
+  
 </section>
 
 <section id="detail" class="screen">
@@ -242,10 +232,9 @@ document.addEventListener("DOMContentLoaded", () => setLanguage(currentLang));
 </section>
 
 <div class="bottom-nav">
-  <button class="nav active" id="navPlay"><span class="ni">▶</span>Jugar</button>
-  <button class="nav" id="navRank"><span class="ni">♛</span>Ranking</button>
-  <button class="nav" id="navStats"><span class="ni">▥</span>Estadísticas</button>
-  <button class="nav" id="navFav"><span class="ni">♥</span>Favoritas</button>
+  <button class="nav active" id="navPlay"><span class="ni">▶</span><span data-i18n="play">Jugar</span></button>
+  <button class="nav" id="navRank"><span class="ni">♛</span><span data-i18n="ranking">Ranking</span></button>
+  <button class="nav" id="navStats"><span class="ni">▥</span><span data-i18n="stats">Estadísticas</span></button>
 </div>
 </div>
 <div id="toast" class="toast"></div>
@@ -267,60 +256,66 @@ function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
 function screen(id){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");window.scrollTo(0,0)}
 function nav(active){document.querySelectorAll(".nav").forEach(x=>x.classList.remove("active"));active.classList.add("active")}
 async function start(){
+  sessionId=crypto.randomUUID();
   try{
-    const {data,error}=await supabaseClient
-      .from("flags")
-      .select("id,name,emoji,elo,wins,games,losses")
-      .order("id");
+    const {data,error}=await supabaseClient.from("flags")
+      .select("id,name,emoji,elo,wins,games,losses").order("id");
     if(error) throw error;
-    if(!data || data.length !== 195) throw new Error("Supabase no contiene exactamente 195 banderas");
-    remoteFlags=data.map(f=>({id:f.id,name:f.name,emoji:f.emoji,elo:f.elo,wins:f.wins,games:f.games,losses:f.losses}));
+    if(!data || data.length!==195) throw new Error("Supabase no contiene exactamente 195 banderas");
+    remoteFlags=data;
   }catch(e){
     console.warn("Supabase no disponible; usando catálogo local.",e);
     remoteFlags=FLAGS.map((f,i)=>({id:i+1,name:f[0],emoji:f[1],elo:1000,wins:0,games:0,losses:0}));
   }
-  bracket=shuffle(remoteFlags).slice(0,64);round=1;group=0;roundWinners=[];selected=null;
-  $("flagsSeen").textContent="64";screen("game");nav($("navPlay"));render();
+  bracket=shuffle(remoteFlags).slice(0,64);
+  round=1;group=0;roundWinners=[];selected=null;
+  $("flagsSeen").textContent="64";
+  screen("game");nav($("navPlay"));updateLanguageUI();render();
 }
 function render(){
  const groups=round===1?16:round===2?4:1;
- $("roundText").textContent=`Ronda ${round} de 3`;
- $("remainingText").textContent=`${groups-group} ${groups-group===1?"grupo":"grupos"} restantes`;
- $("progressBar").style.width=`${Math.round(((group)/groups)*100)}%`;
+ $("roundText").textContent=`${t("round")} ${round} de 3`;
+ $("remainingText").textContent=`${groups-group} ${groups-group===1?t("group"):t("groups")}`;
+ $("progressBar").style.width=`${Math.round((group/groups)*100)}%`;
  const four=bracket.slice(group*4,group*4+4), grid=$("grid");grid.innerHTML="";
  four.forEach(f=>{
-   const r=store.ranking[f[0]], b=document.createElement("button");b.className="flag-card";b.type="button";
-   b.innerHTML=`<div class="flag-img">${f[1]}</div><div class="flag-name">${f[0]}</div><div class="elo">ELO ${Math.round(r.elo)}</div>`;
+   const b=document.createElement("button");b.className="flag-card";b.type="button";
+   b.innerHTML=`<div class="flag-img">${f.emoji}</div><div class="flag-name">${countryName(f.name)}</div><div class="elo">ELO ${Math.round(f.elo)}</div>`;
    b.addEventListener("click",()=>choose(f,b,four));grid.appendChild(b);
  });
 }
 async function choose(f,btn,four){
- if(selected)return;selected=f;
-  // Registrar elección en el ranking global.
-  try{
-    const winner=bracket[group*4 + Number(selected)];
-    const opponents=[0,1,2,3]
-      .filter(i=>i!==Number(selected))
-      .map(i=>bracket[group*4+i].id);
-    if(winner && winner.id){
-      const {error}=await supabaseClient.rpc("record_choice",{
-        p_session_id:sessionId,
-        p_winner_flag_id:winner.id,
-        p_opponent_flag_ids:opponents
-      });
-      if(error) console.warn("No se pudo registrar la elección:",error);
-    }
-  }catch(e){ console.warn("Error registrando elección remota:",e); }
-btn.classList.add("selected");
+ if(selected)return;
+ selected=f;
+ btn.classList.add("selected");
  document.querySelectorAll(".flag-card").forEach(x=>{if(x!==btn)x.classList.add("dim")});
- updateElo(f,four);
+ try{
+   const opponents=four.filter(x=>x.id!==f.id).map(x=>x.id);
+   const {error}=await supabaseClient.rpc("record_choice",{
+     p_session_id:sessionId,
+     p_winner_flag_id:f.id,
+     p_opponent_flag_ids:opponents
+   });
+   if(error) throw error;
+   const {data,error:readError}=await supabaseClient.from("flags")
+     .select("id,name,emoji,elo,wins,games,losses")
+     .in("id",[f.id,...opponents]);
+   if(!readError && data){
+     data.forEach(updated=>{
+       const target=remoteFlags.find(x=>x.id===updated.id);
+       if(target) Object.assign(target,updated);
+       const current=bracket.find(x=>x.id===updated.id);
+       if(current) Object.assign(current,updated);
+     });
+   }
+ }catch(e){ console.warn("No se pudo registrar la elección:",e); }
  setTimeout(()=>{
    roundWinners.push(f);group++;selected=null;
    const groups=round===1?16:round===2?4:1;
    if(group<groups){render();return}
    if(round<3){bracket=roundWinners;roundWinners=[];round++;group=0;render()}
    else finish(f);
- },500);
+ },450);
 }
 function updateElo(winner,four){
  const K=28, w=store.ranking[winner[0]];
@@ -329,18 +324,38 @@ function updateElo(winner,four){
 }
 function finish(w){
  store.games++;store.history.push({winner:w[0],date:Date.now()});if(store.history.length>100)store.history.shift();save();
- $("winnerFlag").textContent=w[1];$("winnerName").textContent=w[0].toUpperCase();screen("result");nav($("navPlay"));
+ $("winnerFlag").textContent=w.emoji;$("winnerName").textContent=countryName(w.name).toUpperCase();screen("result");nav($("navPlay"));
 }
-function renderRanking(){
- let a=Object.values(store.ranking);
- a.sort((x,y)=>sort==="wins"?y.wins-x.wins:sort==="rate"?((y.wins/(y.games||1))-(x.wins/(x.games||1))):y.elo-x.elo);
- $("rankingBody").innerHTML=a.slice(0,20).map((x,i)=>`<div class="row"><div class="rank-num">${i+1}</div><div><span class="mini">${x.emoji}</span>${x.name}</div><div><b>${Math.round(x.elo)}</b></div><div>${x.wins}</div><div>${x.games?Math.round(100*x.wins/x.games):0}%</div></div>`).join("");
- document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.sort===sort));
+async function renderRanking(){
  screen("ranking");nav($("navRank"));
+ $("rankingBody").innerHTML=`<div style="padding:20px;text-align:center;opacity:.7">${t("loading")}</div>`;
+ try{
+   const {data,error}=await supabaseClient.from("flags")
+     .select("id,name,emoji,elo,wins,games,losses");
+   if(error) throw error;
+   let a=[...(data||[])];
+   a.sort((x,y)=>{
+     if(sort==="wins") return y.wins-x.wins;
+     if(sort==="rate") return (y.wins/(y.games||1))-(x.wins/(x.games||1));
+     return y.elo-x.elo;
+   });
+   $("rankingBody").innerHTML=a.slice(0,50).map((x,i)=>`
+     <div class="row">
+       <div class="rank-num">${i+1}</div>
+       <div><span class="mini">${x.emoji}</span>${countryName(x.name)}</div>
+       <div><b>${Math.round(x.elo)}</b></div>
+       <div>${x.wins}</div>
+       <div>${x.games?Math.round(100*x.wins/x.games):0}%</div>
+     </div>`).join("");
+   document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.sort===sort));
+ }catch(e){
+   console.warn(e);
+   $("rankingBody").innerHTML=`<div style="padding:20px;text-align:center">${t("noData")}</div>`;
+ }
 }
 function showDetail(name){
- const x=store.ranking[name];$("detailName").textContent=name.toUpperCase();$("detailFlag").textContent=x.emoji;
- $("detailStats").innerHTML=`<div class="stat-row"><span>ELO</span><b>${Math.round(x.elo)}</b></div><div class="stat-row"><span>Victorias</span><b>${x.wins}</b></div><div class="stat-row"><span>Derrotas</span><b>${x.losses}</b></div><div class="stat-row"><span>% victorias</span><b>${x.games?Math.round(100*x.wins/x.games):0}%</b></div><div class="stat-row"><span>Partidas</span><b>${x.games}</b></div><div class="panel-title" style="margin-top:12px">Evolución del ELO</div><div class="chart">${[42,55,49,63,58,74,69,82,76,94,88,100].map(h=>`<div class="bar-chart" style="height:${h}%"></div>`).join("")}</div>`;
+ const x=(remoteFlags.find(f=>f.name===name)||store.ranking[name]);if(!x)return;$("detailName").textContent=countryName(name).toUpperCase();$("detailFlag").textContent=x.emoji;
+ $("detailStats").innerHTML=`<div class="stat-row"><span>ELO</span><b>${Math.round(x.elo)}</b></div><div class="stat-row"><span data-i18n="wins">Victorias</span><b>${x.wins}</b></div><div class="stat-row"><span data-i18n="losses">Derrotas</span><b>${x.losses}</b></div><div class="stat-row"><span>% victorias</span><b>${x.games?Math.round(100*x.wins/x.games):0}%</b></div><div class="stat-row"><span data-i18n="games">Partidas</span><b>${x.games}</b></div><div class="panel-title" style="margin-top:12px">Evolución del ELO</div><div class="chart">${[42,55,49,63,58,74,69,82,76,94,88,100].map(h=>`<div class="bar-chart" style="height:${h}%"></div>`).join("")}</div>`;
  screen("detail");
 }
 $("rankingBtn").onclick=renderRanking;$("navRank").onclick=renderRanking;$("navPlay").onclick=()=>{screen("game");nav($("navPlay"));render()};
@@ -348,47 +363,16 @@ $("newGame").onclick=start;$("back").onclick=start;$("detailBack").onclick=rende
 $("reset").onclick=()=>{if(confirm("¿Borrar el ranking local?")){store={games:0,ranking:{},history:[]};FLAGS.forEach(([n,e])=>store.ranking[n]={name:n,emoji:e,elo:1000,wins:0,games:0,losses:0});save();renderRanking()}};
 $("share").onclick=async()=>{const text=`Mi ganadora en Flag Battle es ${$("winnerName").textContent} ${$("winnerFlag").textContent}`;try{if(navigator.share)await navigator.share({title:"Flag Battle",text});else throw 0}catch(e){try{await navigator.clipboard.writeText(text);toast("Resultado copiado")}catch(e2){toast(text)}}};
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{sort=t.dataset.sort;renderRanking()});
-$("navStats").onclick=()=>{const a=Object.values(store.ranking).sort((x,y)=>y.elo-x.elo)[0];showDetail(a.name);nav($("navStats"))};
-$("navFav").onclick=()=>toast("Las favoritas estarán disponibles en la siguiente versión.");
+$("navStats").onclick=()=>{
+  const source=remoteFlags.length?remoteFlags:Object.values(store.ranking);
+  const a=[...source].sort((x,y)=>y.elo-x.elo)[0];
+  if(a){showDetail(a.name);nav($("navStats"));}
+};
+
 function toast(t){$("toast").textContent=t;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1800)}
 start();
 })();
 </script>
 
-<script>
-async function renderGlobalRanking(){
-  const container =
-    document.querySelector("#rankingList") ||
-    document.querySelector(".ranking-list") ||
-    document.querySelector("[data-ranking-list]");
-  if(!container) return;
-  container.innerHTML = `<div class="ranking-loading">${t("loading")}</div>`;
-  try{
-    const {data,error}=await supabaseClient
-      .from("flags")
-      .select("id,name,emoji,elo,wins,games,losses")
-      .order("elo",{ascending:false})
-      .limit(50);
-    if(error) throw error;
-    if(!data || !data.length){
-      container.innerHTML=`<div class="ranking-empty">${t("noData")}</div>`;
-      return;
-    }
-    container.innerHTML=data.map((f,i)=>`
-      <div class="ranking-row">
-        <span class="ranking-pos">${i+1}</span>
-        <span class="ranking-flag">${f.emoji}</span>
-        <span class="ranking-country">${countryName(f.name)}</span>
-        <span class="ranking-elo">${Math.round(f.elo)}</span>
-      </div>`).join("");
-  }catch(e){
-    console.warn("Ranking global no disponible",e);
-    container.innerHTML=`<div class="ranking-empty">${t("noData")}</div>`;
-  }
-}
-document.addEventListener("DOMContentLoaded",()=>{
-  setTimeout(renderGlobalRanking,250);
-});
-</script>
 </body>
 </html>
