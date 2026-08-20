@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#061727">
+<title>Flag Battle</title>
+<style>
+:root{
+  --bg:#061727; --bg2:#0a2033; --card:#102a40; --card2:#0c2337;
+  --line:#193c58; --text:#f7fbff; --muted:#9db1c2;
+  --blue:#08a8ff; --blue2:#1678d8; --gold:#ffbf18; --green:#38d27c;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:linear-gradient(180deg,#061727,#081c2e 65%,#061727);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
+body{padding-bottom:env(safe-area-inset-bottom)}
+button{font:inherit;color:inherit}
+button:focus-visible{outline:3px solid #46c7ff;outline-offset:3px}
+.app{width:100%;max-width:620px;margin:0 auto;min-height:100vh;padding:env(safe-area-inset-top) 18px 26px}
+header{height:74px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.06)}
+.brand{display:flex;align-items:center;gap:10px}.brand-icon{font-size:24px}.brand h1{font-size:21px;letter-spacing:.7px;margin:0;font-weight:900}
+.header-btn{border:1px solid var(--line);background:#0c2337;border-radius:12px;padding:9px 13px;font-weight:700;font-size:13px}
+.screen{display:none}.screen.active{display:block}
+.progress-row{display:flex;justify-content:space-between;font-size:13px;margin:18px 1px 7px}.progress-row span:last-child{color:var(--muted)}
+.progress{height:8px;border-radius:99px;background:#12334b;overflow:hidden}.progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--blue),#0c8fe1);border-radius:99px;transition:width .35s ease}
+.question{text-align:center;padding:24px 0 18px}.question h2{font-size:22px;margin:0 0 7px}.question p{margin:0;color:var(--muted);font-size:14px}
+.flag-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.flag-card{position:relative;border:1px solid #1c415d;background:linear-gradient(145deg,#112d44,#0d263a);border-radius:16px;padding:14px 10px 13px;min-height:164px;box-shadow:0 9px 28px #0005;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:transform .18s,border-color .18s,opacity .25s,box-shadow .18s}
+.flag-card:active{transform:scale(.97)}
+.flag-card.selected{border:2px solid var(--gold);box-shadow:0 0 0 2px #ffbf1830,0 0 28px #ffbf1840;transform:scale(1.025)}
+.flag-card.dim{opacity:.22;transform:scale(.97)}
+.flag-img{width:min(125px,82%);aspect-ratio:1.5;display:flex;align-items:center;justify-content:center;background:#fff;border-radius:9px;box-shadow:0 5px 15px #0004;font-size:64px;line-height:1;overflow:hidden}
+.flag-name{font-size:14px;font-weight:750;margin-top:10px}.elo{font-size:11px;color:var(--muted);margin-top:3px}
+.hint{margin-top:16px;background:#0e293e;border-radius:14px;padding:12px 14px;display:flex;gap:10px;align-items:center;color:#eaf5fc;font-size:13px}.hint b{color:var(--gold)}
+.path{background:#0d263b;border:1px solid #163a54;border-radius:15px;padding:13px;margin:5px 0 16px}.path-title{text-align:center;font-size:12px;color:var(--muted);margin-bottom:8px}.path-row{display:flex;align-items:center;justify-content:center;gap:8px}.path-item{width:44px;height:36px;background:#071b2b;border:1px solid #234862;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:22px}.path-item.current{border-color:var(--gold);box-shadow:0 0 12px #ffbf1830}.arrow{color:#688398}
+.result{text-align:center;padding-top:18px}.result .confetti{font-size:25px;letter-spacing:8px;color:var(--gold)}.result h2{color:var(--gold);font-size:28px;margin:10px 0}.winner-flag{font-size:115px;background:#fff;width:190px;aspect-ratio:1.5;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:22px auto 10px;box-shadow:0 0 35px #ffbf1830}.winner-name{display:inline-block;background:linear-gradient(90deg,#e89a00,#ffc62b);color:#111;border-radius:4px;padding:10px 35px;font-size:23px;font-weight:900;box-shadow:0 7px 0 #b87500}
+.panel{background:linear-gradient(145deg,#102b40,#0c2337);border:1px solid #173c58;border-radius:17px;padding:16px;margin-top:18px;text-align:left}.panel-title{text-align:center;font-weight:800;margin-bottom:10px}.stat-row{display:flex;justify-content:space-between;padding:7px 0;font-size:13px}.stat-row span{color:var(--muted)}
+.primary{width:100%;border:0;background:linear-gradient(90deg,#ffad00,#ffc62b);color:#111;border-radius:12px;padding:15px;font-weight:900;margin-top:16px;box-shadow:0 5px 0 #a66f00}.secondary{width:100%;border:1px solid #234862;background:#0d263b;border-radius:12px;padding:13px;font-weight:750;margin-top:11px}
+.ranking-head{padding:22px 0 10px;text-align:center}.ranking-head h2{margin:0 0 5px;font-size:24px}.ranking-head p{margin:0;color:var(--muted);font-size:13px}.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;background:#091d2e;padding:5px;border-radius:12px;margin:10px 0 12px}.tab{border:0;background:transparent;padding:9px 4px;border-radius:8px;font-size:12px;font-weight:750}.tab.active{background:#157bd7}.table{overflow:hidden;border:1px solid #173c58;border-radius:14px;background:#0c2337}.row{display:grid;grid-template-columns:30px 1fr 48px 60px 50px;align-items:center;padding:9px 8px;border-bottom:1px solid #17354d;font-size:12px}.row:last-child{border-bottom:0}.row.head{color:var(--muted);font-size:10px;text-transform:uppercase}.rank-num{font-weight:900}.mini{font-size:22px;vertical-align:middle;margin-right:5px}.detail-flag{font-size:80px;background:#fff;width:150px;aspect-ratio:1.5;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:16px auto}.chart{height:125px;display:flex;align-items:flex-end;gap:4px;padding:12px;border-radius:10px;background:#091d2e}.bar-chart{flex:1;background:linear-gradient(180deg,var(--blue),#0c5d98);border-radius:3px 3px 0 0;min-height:10px}
+.bottom-nav{position:sticky;bottom:0;margin:18px -18px -26px;padding:9px 12px calc(9px + env(safe-area-inset-bottom));background:#061727eF;border-top:1px solid #15354d;display:grid;grid-template-columns:repeat(4,1fr);backdrop-filter:blur(12px)}.nav{border:0;background:transparent;color:#71879a;font-size:11px;padding:5px}.nav.active{color:var(--blue)}.nav .ni{display:block;font-size:19px;margin-bottom:2px}
+.toast{position:fixed;left:50%;bottom:25px;transform:translate(-50%,20px);opacity:0;background:#0b2539;border:1px solid #28516e;border-radius:12px;padding:11px 14px;font-size:13px;transition:.2s;z-index:20;pointer-events:none}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:380px){.app{padding-left:13px;padding-right:13px}.flag-grid{gap:9px}.flag-card{min-height:148px}.flag-img{font-size:54px}.question h2{font-size:20px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand"><span class="brand-icon">🏆</span><h1>FLAG BATTLE</h1></div>
+  <button class="header-btn" id="rankingBtn">Ranking</button>
+</header>
+
+<section id="game" class="screen active">
+  <div class="progress-row"><span id="roundText">Ronda 1 de 3</span><span id="remainingText">16 grupos</span></div>
+  <div class="progress"><div id="progressBar"></div></div>
+  <div class="question"><h2>¿Cuál es la bandera más bonita?</h2><p>Toca tu favorita</p></div>
+  <div id="path" class="path" hidden></div>
+  <div id="grid" class="flag-grid"></div>
+  <div class="hint">💡 <div><b>Elige la que más te guste.</b><br>¡No hay respuestas correctas!</div></div>
+</section>
+
+<section id="result" class="screen">
+  <div class="result">
+    <div class="confetti">✦ ✦ ✦ ✦ ✦</div><h2>¡Tenemos ganadora!</h2>
+    <div class="winner-flag" id="winnerFlag">🇯🇵</div>
+    <div class="winner-name" id="winnerName">JAPÓN</div>
+    <div class="panel">
+      <div class="panel-title">Estadísticas de la partida</div>
+      <div class="stat-row"><span>Rondas jugadas</span><b>3</b></div>
+      <div class="stat-row"><span>Grupos superados</span><b>21</b></div>
+      <div class="stat-row"><span>Banderas vistas</span><b id="flagsSeen">64</b></div>
+      <div class="stat-row"><span>Selecciones</span><b>21</b></div>
+    </div>
+    <button class="primary" id="newGame">▶ &nbsp; Jugar otra partida</button>
+    <button class="secondary" id="share">↗ &nbsp; Compartir resultado</button>
+  </div>
+</section>
+
+<section id="ranking" class="screen">
+  <div class="ranking-head"><h2>♛ RANKING GENERAL</h2><p>El ranking se guarda en este dispositivo.</p></div>
+  <div class="tabs"><button class="tab active" data-sort="elo">ELO</button><button class="tab" data-sort="wins">Victorias</button><button class="tab" data-sort="rate">% Victorias</button></div>
+  <div class="table"><div class="row head"><div>#</div><div>Bandera</div><div>ELO</div><div>Victorias</div><div>%</div></div><div id="rankingBody"></div></div>
+  <button class="secondary" id="back">← Volver a jugar</button>
+  <button class="secondary" id="reset">Borrar ranking</button>
+</section>
+
+<section id="detail" class="screen">
+  <div class="ranking-head"><h2 id="detailName">JAPÓN</h2></div>
+  <div class="detail-flag" id="detailFlag">🇯🇵</div>
+  <div class="panel" id="detailStats"></div>
+  <button class="secondary" id="detailBack">← Volver</button>
+</section>
+
+<div class="bottom-nav">
+  <button class="nav active" id="navPlay"><span class="ni">▶</span>Jugar</button>
+  <button class="nav" id="navRank"><span class="ni">♛</span>Ranking</button>
+  <button class="nav" id="navStats"><span class="ni">▥</span>Estadísticas</button>
+  <button class="nav" id="navFav"><span class="ni">♥</span>Favoritas</button>
+</div>
+</div>
+<div id="toast" class="toast"></div>
+
+<script>
+(function(){
+"use strict";
+const FLAGS=[
+["Afganistán","🇦🇫"],["Albania","🇦🇱"],["Argelia","🇩🇿"],["Argentina","🇦🇷"],["Australia","🇦🇺"],["Austria","🇦🇹"],["Bélgica","🇧🇪"],["Brasil","🇧🇷"],
+["Bulgaria","🇧🇬"],["Canadá","🇨🇦"],["Chile","🇨🇱"],["China","🇨🇳"],["Colombia","🇨🇴"],["Croacia","🇭🇷"],["Cuba","🇨🇺"],["Chipre","🇨🇾"],
+["Chequia","🇨🇿"],["Dinamarca","🇩🇰"],["Ecuador","🇪🇨"],["Egipto","🇪🇬"],["Estonia","🇪🇪"],["Finlandia","🇫🇮"],["Francia","🇫🇷"],["Georgia","🇬🇪"],
+["Alemania","🇩🇪"],["Grecia","🇬🇷"],["Hungría","🇭🇺"],["Islandia","🇮🇸"],["India","🇮🇳"],["Indonesia","🇮🇩"],["Irlanda","🇮🇪"],["Israel","🇮🇱"],
+["Italia","🇮🇹"],["Japón","🇯🇵"],["Jamaica","🇯🇲"],["Jordania","🇯🇴"],["Kazajistán","🇰🇿"],["Kenia","🇰🇪"],["Corea del Sur","🇰🇷"],["Letonia","🇱🇻"],
+["Líbano","🇱🇧"],["Lituania","🇱🇹"],["Luxemburgo","🇱🇺"],["Malasia","🇲🇾"],["México","🇲🇽"],["Marruecos","🇲🇦"],["Países Bajos","🇳🇱"],["Nueva Zelanda","🇳🇿"],
+["Nigeria","🇳🇬"],["Noruega","🇳🇴"],["Pakistán","🇵🇰"],["Perú","🇵🇪"],["Filipinas","🇵🇭"],["Polonia","🇵🇱"],["Portugal","🇵🇹"],["Rumanía","🇷🇴"],
+["Rusia","🇷🇺"],["Serbia","🇷🇸"],["Singapur","🇸🇬"],["Eslovaquia","🇸🇰"],["Eslovenia","🇸🇮"],["Sudáfrica","🇿🇦"],["España","🇪🇸"],["Suecia","🇸🇪"],
+["Suiza","🇨🇭"],["Tailandia","🇹🇭"],["Turquía","🇹🇷"],["Ucrania","🇺🇦"],["Reino Unido","🇬🇧"],["Estados Unidos","🇺🇸"],["Uruguay","🇺🇾"],["Venezuela","🇻🇪"]
+];
+const KEY="flagBattle_ui_v2";
+let store={games:0,ranking:{},history:[]}, bracket=[],round=1,group=0,roundWinners=[],sort="elo",selected=null;
+function safeRead(){try{const x=localStorage.getItem(KEY);return x?JSON.parse(x):null}catch(e){return null}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){}}
+const saved=safeRead(); if(saved&&saved.ranking)store=saved;
+FLAGS.forEach(([n,e])=>{if(!store.ranking[n])store.ranking[n]={name:n,emoji:e,elo:1000,wins:0,games:0,losses:0}});
+save();
+function $(id){return document.getElementById(id)}
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function screen(id){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");window.scrollTo(0,0)}
+function nav(active){document.querySelectorAll(".nav").forEach(x=>x.classList.remove("active"));active.classList.add("active")}
+function start(){
+ bracket=shuffle(FLAGS);round=1;group=0;roundWinners=[];selected=null;
+ $("flagsSeen").textContent="64";screen("game");nav($("navPlay"));render();
+}
+function render(){
+ const groups=round===1?16:round===2?4:1;
+ $("roundText").textContent=`Ronda ${round} de 3`;
+ $("remainingText").textContent=`${groups-group} ${groups-group===1?"grupo":"grupos"} restantes`;
+ $("progressBar").style.width=`${Math.round(((group)/groups)*100)}%`;
+ const four=bracket.slice(group*4,group*4+4), grid=$("grid");grid.innerHTML="";
+ four.forEach(f=>{
+   const r=store.ranking[f[0]], b=document.createElement("button");b.className="flag-card";b.type="button";
+   b.innerHTML=`<div class="flag-img">${f[1]}</div><div class="flag-name">${f[0]}</div><div class="elo">ELO ${Math.round(r.elo)}</div>`;
+   b.addEventListener("click",()=>choose(f,b,four));grid.appendChild(b);
+ });
+}
+function choose(f,btn,four){
+ if(selected)return;selected=f;btn.classList.add("selected");
+ document.querySelectorAll(".flag-card").forEach(x=>{if(x!==btn)x.classList.add("dim")});
+ updateElo(f,four);
+ setTimeout(()=>{
+   roundWinners.push(f);group++;selected=null;
+   const groups=round===1?16:round===2?4:1;
+   if(group<groups){render();return}
+   if(round<3){bracket=roundWinners;roundWinners=[];round++;group=0;render()}
+   else finish(f);
+ },500);
+}
+function updateElo(winner,four){
+ const K=28, w=store.ranking[winner[0]];
+ four.forEach(f=>{if(f[0]===winner[0])return;const l=store.ranking[f[0]],exp=1/(1+10**((l.elo-w.elo)/400));w.elo+=K*(1-exp);l.elo-=K*exp;l.losses++;l.games++});
+ w.wins++;w.games++;save();
+}
+function finish(w){
+ store.games++;store.history.push({winner:w[0],date:Date.now()});if(store.history.length>100)store.history.shift();save();
+ $("winnerFlag").textContent=w[1];$("winnerName").textContent=w[0].toUpperCase();screen("result");nav($("navPlay"));
+}
+function renderRanking(){
+ let a=Object.values(store.ranking);
+ a.sort((x,y)=>sort==="wins"?y.wins-x.wins:sort==="rate"?((y.wins/(y.games||1))-(x.wins/(x.games||1))):y.elo-x.elo);
+ $("rankingBody").innerHTML=a.slice(0,20).map((x,i)=>`<div class="row"><div class="rank-num">${i+1}</div><div><span class="mini">${x.emoji}</span>${x.name}</div><div><b>${Math.round(x.elo)}</b></div><div>${x.wins}</div><div>${x.games?Math.round(100*x.wins/x.games):0}%</div></div>`).join("");
+ document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.sort===sort));
+ screen("ranking");nav($("navRank"));
+}
+function showDetail(name){
+ const x=store.ranking[name];$("detailName").textContent=name.toUpperCase();$("detailFlag").textContent=x.emoji;
+ $("detailStats").innerHTML=`<div class="stat-row"><span>ELO</span><b>${Math.round(x.elo)}</b></div><div class="stat-row"><span>Victorias</span><b>${x.wins}</b></div><div class="stat-row"><span>Derrotas</span><b>${x.losses}</b></div><div class="stat-row"><span>% victorias</span><b>${x.games?Math.round(100*x.wins/x.games):0}%</b></div><div class="stat-row"><span>Partidas</span><b>${x.games}</b></div><div class="panel-title" style="margin-top:12px">Evolución del ELO</div><div class="chart">${[42,55,49,63,58,74,69,82,76,94,88,100].map(h=>`<div class="bar-chart" style="height:${h}%"></div>`).join("")}</div>`;
+ screen("detail");
+}
+$("rankingBtn").onclick=renderRanking;$("navRank").onclick=renderRanking;$("navPlay").onclick=()=>{screen("game");nav($("navPlay"));render()};
+$("newGame").onclick=start;$("back").onclick=start;$("detailBack").onclick=renderRanking;
+$("reset").onclick=()=>{if(confirm("¿Borrar el ranking local?")){store={games:0,ranking:{},history:[]};FLAGS.forEach(([n,e])=>store.ranking[n]={name:n,emoji:e,elo:1000,wins:0,games:0,losses:0});save();renderRanking()}};
+$("share").onclick=async()=>{const text=`Mi ganadora en Flag Battle es ${$("winnerName").textContent} ${$("winnerFlag").textContent}`;try{if(navigator.share)await navigator.share({title:"Flag Battle",text});else throw 0}catch(e){try{await navigator.clipboard.writeText(text);toast("Resultado copiado")}catch(e2){toast(text)}}};
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{sort=t.dataset.sort;renderRanking()});
+$("navStats").onclick=()=>{const a=Object.values(store.ranking).sort((x,y)=>y.elo-x.elo)[0];showDetail(a.name);nav($("navStats"))};
+$("navFav").onclick=()=>toast("Las favoritas estarán disponibles en la siguiente versión.");
+function toast(t){$("toast").textContent=t;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1800)}
+start();
+})();
+</script>
+</body>
+</html>
