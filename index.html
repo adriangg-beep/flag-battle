@@ -61,12 +61,143 @@ header{height:74px;display:flex;align-items:center;justify-content:space-between
 .toast{position:fixed;left:50%;bottom:25px;transform:translate(-50%,20px);opacity:0;background:#0b2539;border:1px solid #28516e;border-radius:12px;padding:11px 14px;font-size:13px;transition:.2s;z-index:20;pointer-events:none}.toast.show{opacity:1;transform:translate(-50%,0)}
 @media(max-width:380px){.app{padding-left:13px;padding-right:13px}.flag-grid{gap:9px}.flag-card{min-height:148px}.flag-img{font-size:54px}.question h2{font-size:20px}}
 </style>
-</head>
+
+<script>
+const I18N = {
+  es: {
+    choose: "Elige tu favorita",
+    round: "Ronda",
+    ranking: "Ranking",
+    games: "Partidas",
+    wins: "Victorias",
+    elo: "ELO",
+    winner: "Ganadora",
+    playAgain: "Jugar de nuevo",
+    share: "Compartir resultado",
+    back: "Volver",
+    worldRanking: "Ranking mundial",
+    noData: "Todavía no hay datos.",
+    loading: "Cargando…",
+    selected: "Seleccionada",
+    language: "Idioma"
+  },
+  en: {
+    choose: "Choose your favorite",
+    round: "Round",
+    ranking: "Ranking",
+    games: "Games",
+    wins: "Wins",
+    elo: "ELO",
+    winner: "Winner",
+    playAgain: "Play again",
+    share: "Share result",
+    back: "Back",
+    worldRanking: "World ranking",
+    noData: "No data yet.",
+    loading: "Loading…",
+    selected: "Selected",
+    language: "Language"
+  }
+};
+
+const COUNTRY_EN = {
+  "Afganistán":"Afghanistan","Albania":"Albania","Alemania":"Germany","Andorra":"Andorra",
+  "Angola":"Angola","Antigua y Barbuda":"Antigua and Barbuda","Arabia Saudita":"Saudi Arabia",
+  "Argelia":"Algeria","Argentina":"Argentina","Armenia":"Armenia","Australia":"Australia",
+  "Austria":"Austria","Azerbaiyán":"Azerbaijan","Bahamas":"Bahamas","Baréin":"Bahrain",
+  "Bangladés":"Bangladesh","Barbados":"Barbados","Bélgica":"Belgium","Belice":"Belize",
+  "Benín":"Benin","Bielorrusia":"Belarus","Bolivia":"Bolivia","Bosnia y Herzegovina":"Bosnia and Herzegovina",
+  "Botsuana":"Botswana","Brasil":"Brazil","Brunéi":"Brunei","Bulgaria":"Bulgaria",
+  "Burkina Faso":"Burkina Faso","Burundi":"Burundi","Bután":"Bhutan","Cabo Verde":"Cape Verde",
+  "Camboya":"Cambodia","Camerún":"Cameroon","Canadá":"Canada","Catar":"Qatar","Chad":"Chad",
+  "Chile":"Chile","China":"China","Chipre":"Cyprus","Colombia":"Colombia","Comoras":"Comoros",
+  "Congo":"Congo","Corea del Norte":"North Korea","Corea del Sur":"South Korea",
+  "Costa de Marfil":"Ivory Coast","Costa Rica":"Costa Rica","Croacia":"Croatia","Cuba":"Cuba",
+  "Dinamarca":"Denmark","Dominica":"Dominica","Ecuador":"Ecuador","Egipto":"Egypt",
+  "El Salvador":"El Salvador","Emiratos Árabes Unidos":"United Arab Emirates","Eritrea":"Eritrea",
+  "Eslovaquia":"Slovakia","Eslovenia":"Slovenia","España":"Spain","Estados Unidos":"United States",
+  "Estonia":"Estonia","Esuatini":"Eswatini","Etiopía":"Ethiopia","Fiji":"Fiji","Filipinas":"Philippines",
+  "Finlandia":"Finland","Francia":"France","Gabón":"Gabon","Gambia":"Gambia","Georgia":"Georgia",
+  "Ghana":"Ghana","Granada":"Grenada","Grecia":"Greece","Guatemala":"Guatemala","Guinea":"Guinea",
+  "Guinea-Bisáu":"Guinea-Bissau","Guinea Ecuatorial":"Equatorial Guinea","Guyana":"Guyana",
+  "Haití":"Haiti","Honduras":"Honduras","Hungría":"Hungary","India":"India","Indonesia":"Indonesia",
+  "Irak":"Iraq","Irán":"Iran","Irlanda":"Ireland","Islandia":"Iceland","Islas Marshall":"Marshall Islands",
+  "Islas Salomón":"Solomon Islands","Israel":"Israel","Italia":"Italy","Jamaica":"Jamaica","Japón":"Japan",
+  "Jordania":"Jordan","Kazajistán":"Kazakhstan","Kenia":"Kenya","Kirguistán":"Kyrgyzstan",
+  "Kiribati":"Kiribati","Kuwait":"Kuwait","Laos":"Laos","Lesoto":"Lesotho","Letonia":"Latvia",
+  "Líbano":"Lebanon","Liberia":"Liberia","Libia":"Libya","Liechtenstein":"Liechtenstein",
+  "Lituania":"Lithuania","Luxemburgo":"Luxembourg","Madagascar":"Madagascar","Malasia":"Malaysia",
+  "Malaui":"Malawi","Maldivas":"Maldives","Malí":"Mali","Malta":"Malta","Marruecos":"Morocco",
+  "Mauricio":"Mauritius","Mauritania":"Mauritania","México":"Mexico","Micronesia":"Micronesia",
+  "Moldavia":"Moldova","Mónaco":"Monaco","Mongolia":"Mongolia","Montenegro":"Montenegro",
+  "Mozambique":"Mozambique","Myanmar":"Myanmar","Namibia":"Namibia","Nauru":"Nauru","Nepal":"Nepal",
+  "Nicaragua":"Nicaragua","Níger":"Niger","Nigeria":"Nigeria","Noruega":"Norway","Nueva Zelanda":"New Zealand",
+  "Omán":"Oman","Países Bajos":"Netherlands","Pakistán":"Pakistan","Palaos":"Palau","Palestina":"Palestine",
+  "Panamá":"Panama","Papúa Nueva Guinea":"Papua New Guinea","Paraguay":"Paraguay","Perú":"Peru",
+  "Polonia":"Poland","Portugal":"Portugal","Reino Unido":"United Kingdom",
+  "República Centroafricana":"Central African Republic","República Checa":"Czechia",
+  "República Democrática del Congo":"Democratic Republic of the Congo","República Dominicana":"Dominican Republic",
+  "Ruanda":"Rwanda","Rumanía":"Romania","Rusia":"Russia","Samoa":"Samoa",
+  "San Cristóbal y Nieves":"Saint Kitts and Nevis","San Marino":"San Marino",
+  "San Vicente y las Granadinas":"Saint Vincent and the Grenadines","Santa Lucía":"Saint Lucia",
+  "Santo Tomé y Príncipe":"São Tomé and Príncipe","Senegal":"Senegal","Serbia":"Serbia",
+  "Seychelles":"Seychelles","Sierra Leona":"Sierra Leone","Singapur":"Singapore","Siria":"Syria",
+  "Somalia":"Somalia","Sri Lanka":"Sri Lanka","Sudáfrica":"South Africa","Sudán":"Sudan",
+  "Sudán del Sur":"South Sudan","Suecia":"Sweden","Suiza":"Switzerland","Surinam":"Suriname",
+  "Tailandia":"Thailand","Tanzania":"Tanzania","Tayikistán":"Tajikistan","Timor-Leste":"Timor-Leste",
+  "Togo":"Togo","Tonga":"Tonga","Trinidad y Tobago":"Trinidad and Tobago","Túnez":"Tunisia",
+  "Turkmenistán":"Turkmenistan","Turquía":"Turkey","Tuvalu":"Tuvalu","Ucrania":"Ukraine",
+  "Uganda":"Uganda","Uruguay":"Uruguay","Uzbekistán":"Uzbekistan","Vanuatu":"Vanuatu",
+  "Vaticano":"Vatican City","Venezuela":"Venezuela","Vietnam":"Vietnam","Yemen":"Yemen",
+  "Yibuti":"Djibouti","Zambia":"Zambia","Zimbabue":"Zimbabwe","Macedonia del Norte":"North Macedonia"
+};
+
+let currentLang = localStorage.getItem("flagBattleLang") || "es";
+
+function t(key){ return (I18N[currentLang] && I18N[currentLang][key]) || key; }
+function countryName(name){ return currentLang === "en" ? (COUNTRY_EN[name] || name) : name; }
+
+function setLanguage(lang){
+  currentLang = lang === "en" ? "en" : "es";
+  localStorage.setItem("flagBattleLang", currentLang);
+  document.documentElement.lang = currentLang;
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.dataset.i18n;
+    el.textContent = t(key);
+  });
+  document.querySelectorAll("[data-country-name]").forEach(el => {
+    el.textContent = countryName(el.dataset.countryName);
+  });
+  document.querySelectorAll(".lang-btn").forEach(btn => btn.classList.toggle("active", btn.dataset.lang === currentLang));
+  if(typeof render === "function") render();
+  if(typeof renderRanking === "function") renderRanking();
+}
+
+document.addEventListener("DOMContentLoaded", () => setLanguage(currentLang));
+</script>
+
+
+<style>
+.language-switcher{display:flex;gap:4px;align-items:center}
+.lang-btn{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:inherit;border-radius:10px;padding:6px 9px;font-weight:700;font-size:12px;cursor:pointer}
+.lang-btn.active{background:#fff;color:#111;border-color:#fff}
+</style>
+<style>
+.ranking-row{display:grid;grid-template-columns:28px 42px 1fr auto;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.ranking-flag{font-size:28px}.ranking-country{font-weight:600}.ranking-elo{font-variant-numeric:tabular-nums;font-weight:700}.ranking-pos{opacity:.6}
+.ranking-loading,.ranking-empty{padding:20px;text-align:center;opacity:.7}
+</style></head>
 <body>
 <div class="app">
 <header>
   <div class="brand"><span class="brand-icon">🏆</span><h1>FLAG BATTLE</h1></div>
-  <button class="header-btn" id="rankingBtn">Ranking</button>
+  
+
+<div class="language-switcher" aria-label="Language">
+  <button class="lang-btn" data-lang="es" onclick="setLanguage('es')">ES</button>
+  <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">EN</button>
+</div>
+
 </header>
 
 <section id="game" class="screen active">
@@ -222,6 +353,42 @@ $("navFav").onclick=()=>toast("Las favoritas estarán disponibles en la siguient
 function toast(t){$("toast").textContent=t;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1800)}
 start();
 })();
+</script>
+
+<script>
+async function renderGlobalRanking(){
+  const container =
+    document.querySelector("#rankingList") ||
+    document.querySelector(".ranking-list") ||
+    document.querySelector("[data-ranking-list]");
+  if(!container) return;
+  container.innerHTML = `<div class="ranking-loading">${t("loading")}</div>`;
+  try{
+    const {data,error}=await supabaseClient
+      .from("flags")
+      .select("id,name,emoji,elo,wins,games,losses")
+      .order("elo",{ascending:false})
+      .limit(50);
+    if(error) throw error;
+    if(!data || !data.length){
+      container.innerHTML=`<div class="ranking-empty">${t("noData")}</div>`;
+      return;
+    }
+    container.innerHTML=data.map((f,i)=>`
+      <div class="ranking-row">
+        <span class="ranking-pos">${i+1}</span>
+        <span class="ranking-flag">${f.emoji}</span>
+        <span class="ranking-country">${countryName(f.name)}</span>
+        <span class="ranking-elo">${Math.round(f.elo)}</span>
+      </div>`).join("");
+  }catch(e){
+    console.warn("Ranking global no disponible",e);
+    container.innerHTML=`<div class="ranking-empty">${t("noData")}</div>`;
+  }
+}
+document.addEventListener("DOMContentLoaded",()=>{
+  setTimeout(renderGlobalRanking,250);
+});
 </script>
 </body>
 </html>
