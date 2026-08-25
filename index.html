@@ -34,8 +34,8 @@ header{height:74px;display:flex;align-items:center;justify-content:space-between
 .toast{position:fixed;left:50%;bottom:25px;transform:translate(-50%,20px);opacity:0;background:#0b2539;border:1px solid #28516e;border-radius:12px;padding:11px 14px;font-size:13px;transition:.2s;z-index:20;pointer-events:none}.toast.show{opacity:1;transform:translate(-50%,0)}
 @media(max-width:380px){.app{padding-left:13px;padding-right:13px}.flag-grid{gap:9px}.flag-card{min-height:148px}.flag-img{font-size:54px}.question h2{font-size:20px}}
 
-.language-switcher{display:flex;gap:5px;align-items:center}.lang-btn{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:inherit;border-radius:10px;padding:6px 9px;font-weight:800;font-size:12px}.lang-btn.active{background:#fff;color:#111}.bottom-nav{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:10px!important;justify-items:center!important}.bottom-nav .nav{width:100%;max-width:150px;text-align:center}
-.language-switcher{display:flex;gap:5px;align-items:center}.lang-btn{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:inherit;border-radius:10px;padding:6px 9px;font-weight:800;font-size:12px}.lang-btn.active{background:#fff;color:#111}.bottom-nav{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:10px!important;justify-items:center!important}.bottom-nav .nav{width:100%;max-width:150px;text-align:center}.flag-capital{font-size:12px;opacity:.65;margin-top:2px;line-height:1.15}
+.language-switcher{display:flex;gap:5px;align-items:center}.lang-btn{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:inherit;border-radius:10px;padding:6px 9px;font-weight:800;font-size:12px}.lang-btn.active{background:#fff;color:#111}.bottom-nav{display:flex!important;justify-content:center!important;gap:28px!important}.bottom-nav .nav{width:140px!important;max-width:140px!important}
+.language-switcher{display:flex;gap:5px;align-items:center}.lang-btn{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:inherit;border-radius:10px;padding:6px 9px;font-weight:800;font-size:12px}.lang-btn.active{background:#fff;color:#111}.bottom-nav{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:10px!important;justify-items:center!important}.bottom-nav .nav{width:100%;max-width:150px;text-align:center}.flag-capital{font-size:12px;opacity:.65;margin-top:2px;line-height:1.15}.profile-rank{font-size:14px;font-weight:800;opacity:.75;margin:8px 0 18px;text-align:center}.ranking-row{font:inherit;color:inherit;width:100%;border:0;cursor:pointer;text-align:inherit}
 </style></head><body>
 <div class="app">
 <header><div class="brand"><span class="brand-icon">🏆</span><h1>FLAG BATTLE</h1></div>
@@ -49,8 +49,8 @@ header{height:74px;display:flex;align-items:center;justify-content:space-between
 <section id="ranking" class="screen"><div class="ranking-head"><h2 id="rankingTitle"></h2><p id="rankingDesc"></p></div>
 <div class="tabs"><button class="tab active" data-sort="elo">ELO</button><button class="tab" data-sort="wins" id="winsTab"></button><button class="tab" data-sort="rate" id="rateTab"></button></div>
 <div class="table"><div class="row head"><div>#</div><div id="flagHead"></div><div>ELO</div><div id="winsHead"></div><div>%</div></div><div id="rankingBody"></div></div><button class="secondary" id="back"></button></section>
-<section id="detail" class="screen"><div class="ranking-head"><h2 id="detailName"></h2></div><div class="detail-flag" id="detailFlag"></div><div class="panel" id="detailStats"></div><button class="secondary" id="detailBack"></button></section>
-<div class="bottom-nav"><button class="nav active" id="navPlay"><span class="ni">▶</span><span id="navPlayText"></span></button><button class="nav" id="navRank"><span class="ni">♛</span><span id="navRankText"></span></button><button class="nav" id="navStats"><span class="ni">▥</span><span id="navStatsText"></span></button></div>
+<section id="detail" class="screen"><div class="ranking-head"><h2 id="detailName"></h2></div><div class="detail-flag" id="detailFlag"></div><div class="profile-rank" id="detailRank"></div><div class="panel" id="detailStats"></div><button class="secondary" id="detailBack"></button></section>
+<div class="bottom-nav"><button class="nav active" id="navPlay"><span class="ni">▶</span><span id="navPlayText"></span></button><button class="nav" id="navRank"><span class="ni">♛</span><span id="navRankText"></span></button></div>
 </div><div id="toast" class="toast"></div>
 
 <script>
@@ -84,7 +84,7 @@ function setLanguage(v){
   $("rankingTitle").textContent="♛ "+txt("world"); $("rankingDesc").textContent=txt("desc");
   $("winsTab").textContent=txt("wins"); $("rateTab").textContent=txt("rate"); $("flagHead").textContent=txt("flag"); $("winsHead").textContent=txt("wins");
   $("back").textContent="← "+txt("back"); $("detailBack").textContent="← "+txt("back2");
-  $("navPlayText").textContent=txt("play"); $("navRankText").textContent=txt("ranking"); $("navStatsText").textContent=txt("stats");
+  $("navPlayText").textContent=txt("play"); $("navRankText").textContent=txt("ranking");
   document.querySelectorAll(".lang-btn").forEach(b=>b.classList.toggle("active",b.dataset.lang===lang));
   if(bracket.length && $("game").classList.contains("active")) renderGame();
   if($("ranking").classList.contains("active")) renderRanking();
@@ -151,24 +151,27 @@ async function renderRanking(){
     if(error) throw error;
     let a=data||[];
     a.sort((x,y)=>sort==="wins"?y.wins-x.wins:sort==="rate"?(y.wins/(y.games||1))-(x.wins/(x.games||1)):y.elo-x.elo);
-    $("rankingBody").innerHTML=a.slice(0,50).map((f,i)=>`<div class="row"><div class="rank-num">${i+1}</div><div><span class="mini">${f.emoji}</span>${cname(f.name)}</div><div><b>${Math.round(f.elo)}</b></div><div>${f.wins}</div><div>${f.games?Math.round(100*f.wins/f.games):0}%</div></div>`).join("");
+    $("rankingBody").innerHTML=a.slice(0,50).map((f,i)=>`<button type="button" class="row ranking-row" data-flag-id="${f.id}"><div class="rank-num">${i+1}</div><div><span class="mini">${f.emoji}</span>${cname(f.name)}</div><div><b>${Math.round(f.elo)}</b></div><div>${f.wins}</div><div>${f.games?Math.round(100*f.wins/f.games):0}%</div></button>`).join("");
+$("rankingBody").querySelectorAll(".ranking-row").forEach(b=>b.onclick=()=>openFlagProfile(Number(b.dataset.flagId)));
   }catch(e){console.error("ranking",e);$("rankingBody").innerHTML=`<div style="padding:20px;text-align:center">${txt("empty")}</div>`}
 }
 
-async function renderStats(){
-  try{
-    const {data,error}=await db.from("flags").select("id,name,capital,emoji,elo,wins,games,losses").order("elo",{ascending:false}).limit(1);
-    if(error) throw error; selectedDetail=data?.[0]||null;
-    if(selectedDetail) renderDetail(selectedDetail); else screen("detail"); nav("navStats");
-  }catch(e){console.error("stats",e)}
+function renderDetail(f, rank){
+  screen("detail");
+  nav("navRank");
+  $("detailName").textContent=cname(f.name).toUpperCase();
+  $("detailFlag").textContent=f.emoji;
+  $("detailRank").textContent=rank ? `#${rank} · ${txt("world")}` : "";
+  $("detailStats").innerHTML=`<div class="stat-row"><span>${txt("capital")}</span><b>${capitalName(f.capital||"")}</b></div><div class="stat-row"><span>ELO</span><b>${Math.round(f.elo)}</b></div><div class="stat-row"><span>${txt("wins")}</span><b>${f.wins}</b></div><div class="stat-row"><span>${txt("losses")}</span><b>${f.losses}</b></div><div class="stat-row"><span>${txt("games")}</span><b>${f.games}</b></div><div class="stat-row"><span>${txt("rate")}</span><b>${f.games?Math.round(100*f.wins/f.games):0}%</b></div>`;
+}
+function openFlagProfile(id){
+  const sorted=[...flags].sort((a,b)=>b.elo-a.elo);
+  const rank=sorted.findIndex(x=>x.id===id)+1;
+  const f=sorted.find(x=>x.id===id);
+  if(f){ selectedDetail=f; renderDetail(f,rank); }
 }
 
-function renderDetail(f){
-  screen("detail"); nav("navStats"); $("detailName").textContent=cname(f.name).toUpperCase(); $("detailFlag").textContent=f.emoji;
-  $("detailStats").innerHTML=`<div class="stat-row"><span>${txt("capital")}</span><b>${capitalName(f.capital||"")}</b></div><div class="stat-row"><span>ELO</span><b>${Math.round(f.elo)}</b></div><div class="stat-row"><span>${txt("wins")}</span><b>${f.wins}</b></div><div class="stat-row"><span>${txt("losses")}</span><b>${f.losses}</b></div><div class="stat-row"><span>${txt("games")}</span><b>${f.games}</b></div>`;
-}
-
-$("navPlay").onclick=start; $("navRank").onclick=renderRanking; $("navStats").onclick=renderStats;
+$("navPlay").onclick=start; $("navRank").onclick=renderRanking;
 $("newGame").onclick=start; $("back").onclick=start; $("detailBack").onclick=renderRanking;
 $("share").onclick=async()=>{const text=`${txt("winner")}: ${$("winnerName").textContent} ${$("winnerFlag").textContent}`;try{if(navigator.share)await navigator.share({title:"Flag Battle",text});else await navigator.clipboard.writeText(text)}catch(e){}};
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{sort=b.dataset.sort;renderRanking()});
