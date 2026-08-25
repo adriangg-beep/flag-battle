@@ -309,7 +309,33 @@ function openFlagProfile(id){
 
 $("navPlay").onclick=start; $("navRank").onclick=renderRanking;
 $("newGame").onclick=start; $("back").onclick=start; $("detailBack").onclick=renderRanking;
-$("share").onclick=async()=>{const text=`${txt("winner")}: ${$("winnerName").textContent} ${$("winnerFlag").textContent}`;try{if(navigator.share)await navigator.share({title:"Flag Battle",text});else await navigator.clipboard.writeText(text)}catch(e){}};
+$("share").onclick=async()=>{
+  const gameUrl="https://adriangg-beep.github.io/flag-battle/";
+  const winner=$("winnerName").textContent;
+  const flag=$("winnerFlag").textContent;
+  const text=lang==="en"
+    ? `🏆 FLAG BATTLE\\nMy winning flag: ${flag} ${winner}\\n\\nWhich one will be yours?\\n${gameUrl}`
+    : `🏆 FLAG BATTLE\\nMi bandera ganadora: ${flag} ${winner}\\n\\n¿Cuál será la tuya?\\n${gameUrl}`;
+
+  try{
+    if(navigator.share){
+      await navigator.share({
+        title:"Flag Battle",
+        text:text
+      });
+    }else if(navigator.clipboard){
+      await navigator.clipboard.writeText(text);
+      const toast=$("toast");
+      if(toast){
+        toast.textContent=lang==="en"?"Result copied":"Resultado copiado";
+        toast.classList.add("show");
+        setTimeout(()=>toast.classList.remove("show"),1800);
+      }
+    }
+  }catch(e){
+    if(e?.name!=="AbortError") console.error("share",e);
+  }
+};
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{sort=b.dataset.sort;renderRanking()});
 setLanguage(lang); start();
 </script>
