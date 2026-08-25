@@ -36,6 +36,47 @@ header{height:74px;display:flex;align-items:center;justify-content:space-between
 
 .language-switcher{display:flex;gap:5px;align-items:center}.lang-btn{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:inherit;border-radius:10px;padding:6px 9px;font-weight:800;font-size:12px}.lang-btn.active{background:#fff;color:#111}.bottom-nav{display:flex!important;justify-content:center!important;gap:28px!important}.bottom-nav .nav{width:140px!important;max-width:140px!important}
 .language-switcher{display:flex;gap:5px;align-items:center}.lang-btn{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:inherit;border-radius:10px;padding:6px 9px;font-weight:800;font-size:12px}.lang-btn.active{background:#fff;color:#111}.bottom-nav{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:10px!important;justify-items:center!important}.bottom-nav .nav{width:100%;max-width:150px;text-align:center}.flag-capital{font-size:12px;opacity:.65;margin-top:2px;line-height:1.15}.profile-rank{font-size:14px;font-weight:800;opacity:.75;margin:8px 0 18px;text-align:center}.ranking-row{font:inherit;color:inherit;width:100%;border:0;cursor:pointer;text-align:inherit}
+
+/* v11 visual fixes */
+button { -webkit-appearance:none; appearance:none; }
+.bottom-nav{
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:100% !important;
+  gap:24px !important;
+  padding-left:0 !important;
+  padding-right:0 !important;
+  box-sizing:border-box !important;
+}
+.bottom-nav .nav{
+  flex:0 0 140px !important;
+  width:140px !important;
+  max-width:140px !important;
+  min-width:140px !important;
+  margin:0 !important;
+  box-sizing:border-box !important;
+}
+.ranking-row{
+  background:transparent !important;
+  background-color:transparent !important;
+  color:inherit !important;
+  -webkit-appearance:none !important;
+  appearance:none !important;
+  border:0 !important;
+}
+.ranking-row:active,
+.ranking-row:focus,
+.ranking-row:hover{
+  background:rgba(255,255,255,.04) !important;
+  color:inherit !important;
+}
+#rankingBody,
+#ranking .table{
+  background:transparent !important;
+}
+
 </style></head><body>
 <div class="app">
 <header><div class="brand"><span class="brand-icon">🏆</span><h1>FLAG BATTLE</h1></div>
