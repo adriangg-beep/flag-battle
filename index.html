@@ -167,14 +167,67 @@ async function loadFlags(){
   return data;
 }
 
-async function start(){
-  sessionId=crypto.randomUUID(); selectedId=null; winners=[]; round=1; group=0;
-  try{ flags=await loadFlags(); }
-  catch(e){
-    console.error("loadFlags",e);
-    flags=FLAGS.map((x,i)=>({id:i+1,name:x[0],capital:"",emoji:x[1],elo:1000,wins:0,games:0,losses:0}));
+async function getOrCreatePlayer(){
+  let playerId=localStorage.getItem("flagBattlePlayerId");
+  if(!playerId){
+    playerId=crypto.randomUUID();
+    localStorage.setItem("flagBattlePlayerId",playerId);
   }
-  bracket=shuffle(flags).slice(0,64); $("flagsSeen").textContent="64"; screen("game"); nav("navPlay"); renderGame();
+  const {error}=await db.rpc("register_player",{
+    p_player_id:playerId,
+    p_language:lang
+  });
+  if(error) throw error;
+  return playerId;
+}
+
+async function start(){
+  sessionId=crypto.randomUUID();
+  selectedId=null;
+  winners=[];
+  round=1;
+  group=0;
+
+  try{
+    const playerId=await getOrCreatePlayer();
+    const {error}=await db.rpc("start_game",{
+      p_game_id:sessionId,
+      p_player_id:playerId
+    });
+    if(error) throw error;
+
+    flags=await loadFlags();
+    bracket=shuffle(flags).slice(0,64);
+    $("flagsSeen").textContent="64";
+    screen("game");
+    nav("navPlay");
+    renderGame();
+  }catch(e){
+    console.error("start analytics/backend",e);
+
+    // Keep the game playable if Supabase is temporarily unavailable.
+    try{
+      flags=await loadFlags();
+    }catch(loadError){
+      console.error("loadFlags fallback",loadError);
+      flags=FLAGS.map((x,i)=>({
+        id:i+1,
+        name:x[0],
+        capital:"",
+        emoji:x[1],
+        elo:1000,
+        wins:0,
+        games:0,
+        losses:0
+      }));
+    }
+
+    bracket=shuffle(flags).slice(0,64);
+    $("flagsSeen").textContent="64";
+    screen("game");
+    nav("navPlay");
+    renderGame();
+  }
 }
 
 function renderGame(){
@@ -208,7 +261,23 @@ async function choose(f,b,four){
   },450);
 }
 
-function finish(f){$("winnerFlag").textContent=f.emoji; $("winnerName").textContent=cname(f.name).toUpperCase(); screen("result"); nav("navPlay")}
+async function finish(f){
+  $("winnerFlag").textContent=f.emoji;
+  $("winnerName").textContent=cname(f.name).toUpperCase();
+
+  try{
+    const {error}=await db.rpc("finish_game",{
+      p_game_id:sessionId,
+      p_winner_flag_id:f.id
+    });
+    if(error) throw error;
+  }catch(e){
+    console.error("finish_game",e);
+  }
+
+  screen("result");
+  nav("navPlay");
+}
 
 async function renderRanking(){
   document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.sort===sort));
