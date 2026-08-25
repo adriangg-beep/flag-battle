@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Flag Battle — Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#061727;--panel:#0b2238;--line:rgba(255,255,255,.10);--text:#f4f7fb;--muted:#9db0c3;--accent:#4c9cff;--danger:#ff6b6b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input{font:inherit}
+.wrap{max-width:1100px;margin:0 auto;padding:28px 18px 50px}
+header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:28px}
+h1,h2{margin:0} h1{font-size:24px} h2{font-size:18px;margin-bottom:14px}
+.muted{color:var(--muted)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px}
+.login{max-width:420px;margin:8vh auto}
+label{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
+input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#071b2d;color:var(--text)}
+.primary,.secondary{border:0;border-radius:10px;padding:12px 16px;cursor:pointer}
+.primary{background:var(--accent);color:white;font-weight:700}.secondary{background:rgba(255,255,255,.08);color:var(--text)}
+.error{color:var(--danger);margin-top:12px;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.metric strong{display:block;font-size:28px;margin-top:5px}.metric span{color:var(--muted);font-size:13px}
+.section{margin-top:24px}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px}
+table{width:100%;border-collapse:collapse;min-width:600px}
+th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);font-size:14px}
+th{color:var(--muted);font-weight:600}
+.chart{height:190px;display:flex;align-items:flex-end;gap:5px;padding:12px 4px 0}
+.bar{flex:1;min-width:4px;background:var(--accent);border-radius:5px 5px 0 0;position:relative}
+.bar small{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--muted);white-space:nowrap}
+.status{font-size:13px;color:var(--muted)}
+.hidden{display:none!important}
+@media(max-width:750px){.grid{grid-template-columns:repeat(2,1fr)}header{align-items:flex-start}.wrap{padding:20px 14px 40px}.metric strong{font-size:23px}}
+</style>
+</head>
+<body>
+<div id="loginView" class="wrap">
+  <div class="card login">
+    <h1>FLAG BATTLE ADMIN</h1>
+    <p class="muted">Panel privado de estadísticas</p>
+    <form id="loginForm">
+      <label>Email</label>
+      <input id="email" type="email" autocomplete="username" required>
+      <label>Contraseña</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+      <button class="primary" style="width:100%;margin-top:18px">Entrar</button>
+      <div id="loginError" class="error"></div>
+    </form>
+  </div>
+</div>
+
+<div id="app" class="wrap hidden">
+<header>
+  <div><h1>FLAG BATTLE</h1><div class="muted">Panel de administración</div></div>
+  <button id="logout" class="secondary">Cerrar sesión</button>
+</header>
+
+<div id="accessError" class="card hidden"></div>
+
+<div id="dashboard" class="hidden">
+  <div class="grid">
+    <div class="card metric"><span>Jugadores</span><strong id="mPlayers">—</strong></div>
+    <div class="card metric"><span>Partidas</span><strong id="mGames">—</strong></div>
+    <div class="card metric"><span>Completadas</span><strong id="mCompleted">—</strong></div>
+    <div class="card metric"><span>Elecciones</span><strong id="mChoices">—</strong></div>
+    <div class="card metric"><span>Jugadores hoy</span><strong id="mPlayersToday">—</strong></div>
+    <div class="card metric"><span>Partidas hoy</span><strong id="mGamesToday">—</strong></div>
+    <div class="card metric"><span>Duración media</span><strong id="mDuration">—</strong></div>
+    <div class="card metric"><span>Tasa de finalización</span><strong id="mCompletionRate">—</strong></div>
+  </div>
+
+  <section class="section">
+    <div class="card">
+      <h2>Partidas — últimos 14 días</h2>
+      <div id="gamesChart" class="chart"></div>
+      <div id="chartStatus" class="status"></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="card">
+      <h2>Banderas más elegidas</h2>
+      <div class="table-wrap">
+        <table><thead><tr><th>#</th><th>Bandera</th><th>Elecciones</th></tr></thead>
+        <tbody id="choicesTable"></tbody></table>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="card">
+      <h2>Banderas ganadoras</h2>
+      <div class="table-wrap">
+        <table><thead><tr><th>#</th><th>Bandera</th><th>Victorias</th></tr></thead>
+        <tbody id="winnersTable"></tbody></table>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="card">
+      <h2>Estado</h2>
+      <div id="status" class="status">Actualizado ahora.</div>
+    </div>
+  </section>
+</div>
+</div>
+
+<script>
+const SUPABASE_URL="https://wcvktwqbvzgccqlvbuln.supabase.co";
+const SUPABASE_KEY="sb_publishable_wTAo2EQDt1FyUfZDdiVRxQ_Zh35zbbL";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+const $=id=>document.getElementById(id);
+const fmt=n=>new Intl.NumberFormat("es-ES").format(n||0);
+const dateKey=d=>new Date(d).toISOString().slice(0,10);
+const escapeHtml=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+
+function showLogin(){ $("loginView").classList.remove("hidden"); $("app").classList.add("hidden"); }
+function showApp(){ $("loginView").classList.add("hidden"); $("app").classList.remove("hidden"); }
+
+async function checkAdmin(){
+  const {data:{session}}=await db.auth.getSession();
+  if(!session){showLogin();return false;}
+  const {data,isError,error}=await db.rpc("is_admin");
+  if(error || data!==true){
+    showApp();
+    $("accessError").classList.remove("hidden");
+    $("accessError").textContent="La cuenta ha iniciado sesión, pero no está autorizada para el panel.";
+    return false;
+  }
+  $("accessError").classList.add("hidden");
+  $("dashboard").classList.remove("hidden");
+  showApp();
+  return true;
+}
+
+$("loginForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  $("loginError").textContent="";
+  const {error}=await db.auth.signInWithPassword({email:$("email").value,password:$("password").value});
+  if(error){$("loginError").textContent=error.message;return;}
+  if(await checkAdmin()) await loadDashboard();
+});
+
+$("logout").onclick=async()=>{await db.auth.signOut();showLogin();};
+
+async function loadDashboard(){
+  $("status").textContent="Cargando datos…";
+  const [pRes,gRes,cRes,fRes]=await Promise.all([
+    db.from("players").select("id,created_at,last_seen_at,language"),
+    db.from("games").select("id,player_id,started_at,finished_at,winner_flag_id"),
+    db.from("game_choices").select("id,game_id,flag_id,round,choice_number,created_at"),
+    db.from("flags").select("id,name,emoji,elo,wins,games,losses")
+  ]);
+  const firstErr=[pRes,gRes,cRes,fRes].find(x=>x.error);
+  if(firstErr) throw firstErr.error;
+
+  const players=pRes.data||[], games=gRes.data||[], choices=cRes.data||[], flags=fRes.data||[];
+  const now=new Date(), today=dateKey(now);
+
+  $("mPlayers").textContent=fmt(players.length);
+  $("mGames").textContent=fmt(games.length);
+  const completed=games.filter(g=>g.finished_at);
+  $("mCompleted").textContent=fmt(completed.length);
+  $("mChoices").textContent=fmt(choices.length);
+
+  const playersToday=new Set(players.filter(p=>dateKey(p.last_seen_at)===today).map(p=>p.id));
+  const gamesToday=games.filter(g=>dateKey(g.started_at)===today);
+  $("mPlayersToday").textContent=fmt(playersToday.size);
+  $("mGamesToday").textContent=fmt(gamesToday.length);
+
+  const durations=completed.map(g=>new Date(g.finished_at)-new Date(g.started_at)).filter(x=>x>=0);
+  const avg=durations.length?durations.reduce((a,b)=>a+b,0)/durations.length:0;
+  const sec=Math.round(avg/1000), mins=Math.floor(sec/60), rem=sec%60;
+  $("mDuration").textContent=durations.length?`${mins}:${String(rem).padStart(2,"0")}`:"—";
+  $("mCompletionRate").textContent=games.length?Math.round(100*completed.length/games.length)+"%":"—";
+
+  renderChart(games);
+  renderTopChoices(choices,flags);
+  renderWinners(games,flags);
+  $("status").textContent=`Actualizado ${new Date().toLocaleString("es-ES")}`;
+}
+
+function renderChart(games){
+  const days=[];
+  for(let i=13;i>=0;i--){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-i);days.push(dateKey(d));}
+  const counts=Object.fromEntries(days.map(d=>[d,0]));
+  games.forEach(g=>{const k=dateKey(g.started_at);if(k in counts)counts[k]++;});
+  const max=Math.max(1,...Object.values(counts));
+  $("gamesChart").innerHTML=days.map(d=>{
+    const v=counts[d], h=Math.max(4,Math.round(v/max*150));
+    const label=new Date(d+"T12:00:00").toLocaleDateString("es-ES",{day:"2-digit",month:"2-digit"});
+    return `<div class="bar" style="height:${h}px" title="${v} partidas"><small>${label}</small></div>`;
+  }).join("");
+}
+
+function renderTopChoices(choices,flags){
+  const names=Object.fromEntries(flags.map(f=>[f.id,f]));
+  const counts={};
+  choices.forEach(c=>counts[c.flag_id]=(counts[c.flag_id]||0)+1);
+  const rows=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,20);
+  $("choicesTable").innerHTML=rows.map(([id,n],i)=>{
+    const f=names[id]||{};
+    return `<tr><td>${i+1}</td><td>${escapeHtml(f.emoji||"")} ${escapeHtml(f.name||"Desconocida")}</td><td>${fmt(n)}</td></tr>`;
+  }).join("")||'<tr><td colspan="3">Sin datos</td></tr>';
+}
+
+function renderWinners(games,flags){
+  const names=Object.fromEntries(flags.map(f=>[f.id,f]));
+  const counts={};
+  games.filter(g=>g.winner_flag_id).forEach(g=>counts[g.winner_flag_id]=(counts[g.winner_flag_id]||0)+1);
+  const rows=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,20);
+  $("winnersTable").innerHTML=rows.map(([id,n],i)=>{
+    const f=names[id]||{};
+    return `<tr><td>${i+1}</td><td>${escapeHtml(f.emoji||"")} ${escapeHtml(f.name||"Desconocida")}</td><td>${fmt(n)}</td></tr>`;
+  }).join("")||'<tr><td colspan="3">Sin datos</td></tr>';
+}
+
+db.auth.onAuthStateChange(async(event,session)=>{
+  if(event==="SIGNED_OUT"){showLogin();return;}
+  if(session && event==="SIGNED_IN"){
+    if(await checkAdmin()) await loadDashboard();
+  }
+});
+
+(async()=>{
+  try{if(await checkAdmin()) await loadDashboard();}
+  catch(e){
+    console.error(e);
+    showApp();
+    $("accessError").classList.remove("hidden");
+    $("accessError").textContent="No se pudieron cargar los datos del panel.";
+  }
+})();
+</script>
+</body>
+</html>
