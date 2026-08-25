@@ -77,6 +77,31 @@ button { -webkit-appearance:none; appearance:none; }
   background:transparent !important;
 }
 
+
+/* v12 visual fixes */
+.bottom-nav{
+  width:100% !important;
+  max-width:none !important;
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:stretch !important;
+  justify-content:center !important;
+  gap:0 !important;
+  box-sizing:border-box !important;
+}
+.bottom-nav .nav{
+  flex:1 1 0 !important;
+  width:auto !important;
+  max-width:none !important;
+  min-width:0 !important;
+  margin:0 !important;
+  box-sizing:border-box !important;
+}
+.tabs .tab.active{
+  background:#fff !important;
+  color:#061727 !important;
+}
+
 </style></head><body>
 <div class="app">
 <header><div class="brand"><span class="brand-icon">🏆</span><h1>FLAG BATTLE</h1></div>
@@ -186,13 +211,14 @@ async function choose(f,b,four){
 function finish(f){$("winnerFlag").textContent=f.emoji; $("winnerName").textContent=cname(f.name).toUpperCase(); screen("result"); nav("navPlay")}
 
 async function renderRanking(){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.sort===sort));
   screen("ranking"); nav("navRank"); $("rankingBody").innerHTML=`<div style="padding:20px;text-align:center">${txt("loading")}</div>`;
   try{
     const {data,error}=await db.from("flags").select("id,name,capital,emoji,elo,wins,games,losses");
     if(error) throw error;
     let a=data||[];
     a.sort((x,y)=>sort==="wins"?y.wins-x.wins:sort==="rate"?(y.wins/(y.games||1))-(x.wins/(x.games||1)):y.elo-x.elo);
-    $("rankingBody").innerHTML=a.slice(0,50).map((f,i)=>`<button type="button" class="row ranking-row" data-flag-id="${f.id}"><div class="rank-num">${i+1}</div><div><span class="mini">${f.emoji}</span>${cname(f.name)}</div><div><b>${Math.round(f.elo)}</b></div><div>${f.wins}</div><div>${f.games?Math.round(100*f.wins/f.games):0}%</div></button>`).join("");
+    $("rankingBody").innerHTML=a.map((f,i)=>`<button type="button" class="row ranking-row" data-flag-id="${f.id}"><div class="rank-num">${i+1}</div><div><span class="mini">${f.emoji}</span>${cname(f.name)}</div><div><b>${Math.round(f.elo)}</b></div><div>${f.wins}</div><div>${f.games?Math.round(100*f.wins/f.games):0}%</div></button>`).join("");
 $("rankingBody").querySelectorAll(".ranking-row").forEach(b=>b.onclick=()=>openFlagProfile(Number(b.dataset.flagId)));
   }catch(e){console.error("ranking",e);$("rankingBody").innerHTML=`<div style="padding:20px;text-align:center">${txt("empty")}</div>`}
 }
