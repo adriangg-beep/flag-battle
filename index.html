@@ -311,29 +311,59 @@ $("navPlay").onclick=start; $("navRank").onclick=renderRanking;
 $("newGame").onclick=start; $("back").onclick=start; $("detailBack").onclick=renderRanking;
 $("share").onclick=async()=>{
   const gameUrl="https://adriangg-beep.github.io/flag-battle/";
-  const winner=$("winnerName").textContent;
-  const flag=$("winnerFlag").textContent;
+  const winner=$("winnerName").textContent.trim();
+  const flag=$("winnerFlag").textContent.trim();
   const text=lang==="en"
-    ? `🏆 FLAG BATTLE\\nMy winning flag: ${flag} ${winner}\\n\\nWhich one will be yours?\\n${gameUrl}`
-    : `🏆 FLAG BATTLE\\nMi bandera ganadora: ${flag} ${winner}\\n\\n¿Cuál será la tuya?\\n${gameUrl}`;
+    ? `🏆 FLAG BATTLE
+My winning flag: ${flag} ${winner}
+
+Which one will be yours?`
+    : `🏆 FLAG BATTLE
+Mi bandera ganadora: ${flag} ${winner}
+
+¿Cuál será la tuya?`;
 
   try{
-    if(navigator.share){
+    if(typeof navigator.share==="function"){
       await navigator.share({
         title:"Flag Battle",
-        text:text
+        text:text,
+        url:gameUrl
       });
-    }else if(navigator.clipboard){
-      await navigator.clipboard.writeText(text);
-      const toast=$("toast");
-      if(toast){
-        toast.textContent=lang==="en"?"Result copied":"Resultado copiado";
-        toast.classList.add("show");
-        setTimeout(()=>toast.classList.remove("show"),1800);
-      }
+      return;
+    }
+
+    const fullText=`${text}\n${gameUrl}`;
+
+    if(navigator.clipboard && window.isSecureContext){
+      await navigator.clipboard.writeText(fullText);
+    }else{
+      const ta=document.createElement("textarea");
+      ta.value=fullText;
+      ta.setAttribute("readonly","");
+      ta.style.position="fixed";
+      ta.style.left="-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+    }
+
+    const toast=$("toast");
+    if(toast){
+      toast.textContent=lang==="en"?"Result copied":"Resultado copiado";
+      toast.classList.add("show");
+      setTimeout(()=>toast.classList.remove("show"),1800);
     }
   }catch(e){
-    if(e?.name!=="AbortError") console.error("share",e);
+    if(e?.name==="AbortError") return;
+    console.error("share",e);
+    const toast=$("toast");
+    if(toast){
+      toast.textContent=lang==="en"?"Could not share result":"No se pudo compartir el resultado";
+      toast.classList.add("show");
+      setTimeout(()=>toast.classList.remove("show"),2200);
+    }
   }
 };
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{sort=b.dataset.sort;renderRanking()});
